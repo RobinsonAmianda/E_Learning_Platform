@@ -3,6 +3,9 @@ from django.db import models
 # Create your models here.
 from django.db import models
 from django.utils.timezone import now
+from django.contrib.auth.models import User
+
+
 
 
 class Course(models.Model):
@@ -87,3 +90,17 @@ class Result(models.Model):
         else:
             status = "Pending"
         return f"{self.username} - {self.topic_name} - {status} ({self.marks} marks)"
+
+
+
+class Profile(models.Model):
+    ROLE_CHOICES = [
+        ('student', 'Student'),
+        ('instructor', 'Instructor'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+
+    def __str__(self):
+        return self.user.username

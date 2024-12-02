@@ -1,6 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Course, Question, Student, Tutorial, Instructor, Topic, Result
 from django.utils.timezone import now
+from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+from .forms import SignUpForm, LoginForm
+from .models import Profile
 
 # === COURSE CRUD ===
 def course_list(request):
@@ -234,3 +238,35 @@ def result_delete(request, pk):
         result.delete()
         return redirect('result_list')
     return render(request, 'result_confirm_delete.html', {'result': result})
+
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            role = form.cleaned_data.get('role')
+            student = Student.objects.create(user=user, role=role)
+            login(request, user)
+            messages.success(request, f"Sign up successful as a {role.capitalize()}!")
+            return redirect('home')  # Replace with your home page route
+    else:
+        form = SignUpForm()
+    return render(request, 'signup.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, "Login successful!")
+            return redirect('home')  # Replace with your home page route
+    else:
+        form = LoginForm()
+    return render(request, 'login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    messages.info(request, "Logged out successfully.")
+    return redirect('login')  # Redirect to login page
